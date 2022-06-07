@@ -33,10 +33,6 @@ export default function Header({
         <AddIcon fontSize="small" />
         <span>New Reminder</span>
       </Button>
-      {/* <button>
-        <AddIcon fontSize="small" />
-        <span>New Reminder</span>
-      </button> */}
     </header>
   );
 }

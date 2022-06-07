@@ -22,7 +22,6 @@ function Calendar(props) {
     actions,
   } = useContext(HomeContext);
   const [days, setDays] = useState([]);
-  // const [reminders, setReminders] = useState({});
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentDateId, setCurrentDateId] = useState();
@@ -51,7 +50,6 @@ function Calendar(props) {
         currentMonth1Based - 1,
         date.getFullYear()
       );
-      // console.log(lastMonthDays);
       const lastMonthDaysRequired = [];
       for (
         let i = lastMonthDays;
@@ -94,9 +92,7 @@ function Calendar(props) {
     setEditReminder({});
   };
 
-  const handleAddReminder = async (e) => {
-    e.preventDefault();
-
+  const handleAddReminder = async () => {
     const dateId = new Date(newReminder.date).toDateString();
     const reminder = {
       id: nanoid(),
@@ -156,11 +152,6 @@ function Calendar(props) {
   return (
     <div className="container">
       <h1>Calendar</h1>
-      {/* <header>
-        {DAYS_OF_THE_WEEK.map((day) => (
-          <span key={day}>{day}</span>
-        ))}
-      </header> */}
       {days.length > 0 && (
         <section className="calendar-wrapper">
           <div style={{ padding: "12px" }}>
@@ -202,13 +193,15 @@ function Calendar(props) {
               )}
             {reminders[currentDateId] && (
               <ul>
-                {reminders[currentDateId].map((reminder) => (
-                  <ReminderCard
-                    key={reminder.key}
-                    reminder={reminder}
-                    handleReminderCardClick={handleReminderCardClick}
-                  />
-                ))}
+                {reminders[currentDateId]
+                  .sort((a, b) => +new Date(a.date) - +new Date(b.date))
+                  .map((reminder) => (
+                    <ReminderCard
+                      key={reminder.key}
+                      reminder={reminder}
+                      handleReminderCardClick={handleReminderCardClick}
+                    />
+                  ))}
               </ul>
             )}
           </aside>

@@ -1,5 +1,5 @@
-import React from "react";
-import Autocomplete from "react-google-autocomplete";
+import React, { useState } from "react";
+import Autocomplete, { usePlacesWidget } from "react-google-autocomplete";
 
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
@@ -9,11 +9,48 @@ export default function EditReminderModal({
   setEditReminder,
   handleCloseEditModal,
 }) {
+  const { ref } = usePlacesWidget({
+    apiKey: "AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g",
+    onPlaceSelected: async (place) => {
+      const cityName = place.address_components[0].long_name;
+      setEditReminder((oldState) => ({
+        ...oldState,
+        city: cityName,
+      }));
+    },
+  });
+  const [errors, setErrors] = useState({});
+
+  const validateFields = () => {
+    const errors = {};
+    let hasError = false;
+    if (!editReminder.city) {
+      errors.city = "Field cannot be empty";
+      hasError = true;
+    }
+    if (!editReminder.text) {
+      errors.text = "Field cannot be empty";
+      hasError = true;
+    }
+    if (!editReminder.date) {
+      errors.date = "Field cannot be empty";
+      hasError = true;
+    }
+    setErrors(errors);
+    return hasError;
+  };
   return (
     <div className="modal">
       <Box
         component="form"
-        onSubmit={handleEditReminder}
+        onSubmit={(e) => {
+          e.preventDefault();
+          const hasError = validateFields();
+          if (hasError) {
+            return;
+          }
+          handleEditReminder();
+        }}
         sx={{
           "& > :not(style)": { m: 1, width: "100%" },
           display: "flex",
@@ -35,34 +72,49 @@ export default function EditReminderModal({
         autoComplete="off"
       >
         <Typography variant="h4">Edit Reminder</Typography>
-        <Autocomplete
-          label="City"
-          apiKey="AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g"
-          disablePortal
-          placeholder="City"
-          fullWidth
-          defaultValue={editReminder.city}
-          // options={[{ label: "Teste" }]}
-          onPlaceSelected={async (place) => {
-            const cityName = place.address_components[0].long_name;
-            setEditReminder((oldState) => ({
-              ...oldState,
-              city: cityName,
-            }));
-          }}
-          // renderInput={(params) => <TextField {...params} label="City" />}
-          style={{
-            padding: "16.5px 14px",
-          }}
-        />
         <TextField
+          inputRef={ref}
+          error={errors.city && errors.city.length > 0}
+          helperText={errors.city && errors.city.length > 0 ? errors.city : ""}
           fullWidth
-          label="Reminder"
+          label="City"
           id="title"
           variant="outlined"
           name="title"
           type="text"
+          value={editReminder.city}
+          onFocus={(e) => {
+            setErrors({
+              ...errors,
+              city: null,
+            });
+          }}
+          onChange={(e) => {
+            setEditReminder((oldSt) => ({
+              ...oldSt,
+              city: e.target.value,
+            }));
+          }}
+          sx={{
+            marginTop: "12px !important",
+          }}
+        />
+        <TextField
+          error={errors.text && errors.text.length > 0}
+          helperText={errors.text && errors.text.length > 0 ? errors.text : ""}
+          fullWidth
+          label="Reminder"
+          id="text"
+          variant="outlined"
+          name="text"
+          type="text"
           value={editReminder.text}
+          onFocus={(e) => {
+            setErrors({
+              ...errors,
+              text: null,
+            });
+          }}
           onChange={(e) => {
             if (
               editReminder.text &&
@@ -82,10 +134,18 @@ export default function EditReminderModal({
           }}
         />
         <TextField
+          error={errors.date && errors.date.length > 0}
+          helperText={errors.date && errors.date.length > 0 ? errors.date : ""}
           fullWidth
           label="Date"
           variant="outlined"
           value={editReminder.date}
+          onFocus={(e) => {
+            setErrors({
+              ...errors,
+              date: null,
+            });
+          }}
           onChange={(e) => {
             setEditReminder((oldState) => ({
               ...oldState,
@@ -99,7 +159,7 @@ export default function EditReminderModal({
           }}
         />
         <Button
-          onClick={handleEditReminder}
+          type="submit"
           variant="contained"
           sx={{
             backgroundColor: "#4D4C7D",

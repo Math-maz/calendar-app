@@ -1,5 +1,5 @@
-import React from "react";
-import Autocomplete from "react-google-autocomplete";
+import React, { useState } from "react";
+import Autocomplete, { usePlacesWidget } from "react-google-autocomplete";
 
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
@@ -9,11 +9,49 @@ export default function AddReminderModal({
   setReminder,
   handleCloseModal,
 }) {
+  const { ref } = usePlacesWidget({
+    apiKey: "AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g",
+    onPlaceSelected: async (place) => {
+      const cityName = place.address_components[0].long_name;
+      setReminder((oldSt) => ({
+        ...oldSt,
+        city: cityName,
+      }));
+    },
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const validateFields = () => {
+    const errors = {};
+    let hasError = false;
+    if (!reminder.city) {
+      errors.city = "Field cannot be empty";
+      hasError = true;
+    }
+    if (!reminder.text) {
+      errors.text = "Field cannot be empty";
+      hasError = true;
+    }
+    if (!reminder.date) {
+      errors.date = "Field cannot be empty";
+      hasError = true;
+    }
+    setErrors(errors);
+    return hasError;
+  };
   return (
     <div className="modal">
       <Box
         component="form"
-        onSubmit={handleAddReminder}
+        onSubmit={(e) => {
+          e.preventDefault();
+          const hasError = validateFields();
+          if (hasError) {
+            return;
+          }
+          handleAddReminder();
+        }}
         sx={{
           "& > :not(style)": { m: 1, width: "100%" },
           display: "flex",
@@ -35,33 +73,49 @@ export default function AddReminderModal({
         autoComplete="off"
       >
         <Typography variant="h4">Add Reminder</Typography>
-        <Autocomplete
-          label="City"
-          apiKey="AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g"
-          disablePortal
-          placeholder="City"
+        <TextField
+          inputRef={ref}
+          error={errors.city && errors.city.length > 0}
+          helperText={errors.city && errors.city.length > 0 ? errors.city : ""}
           fullWidth
-          // options={[{ label: "Teste" }]}
-          onPlaceSelected={async (place) => {
-            const cityName = place.address_components[0].long_name;
+          label="City"
+          id="title"
+          variant="outlined"
+          name="title"
+          type="text"
+          value={reminder.city}
+          onFocus={(e) => {
+            setErrors({
+              ...errors,
+              city: null,
+            });
+          }}
+          onChange={(e) => {
             setReminder((oldSt) => ({
               ...oldSt,
-              city: cityName,
+              city: e.target.value,
             }));
           }}
-          // renderInput={(params) => <TextField {...params} label="City" />}
-          style={{
-            padding: "16.5px 14px",
+          sx={{
+            marginTop: "12px !important",
           }}
         />
         <TextField
           fullWidth
+          error={errors.text && errors.text.length > 0}
+          helperText={errors.text && errors.text.length > 0 ? errors.text : ""}
           label="Reminder"
           id="title"
           variant="outlined"
           name="title"
           type="text"
           value={reminder.text}
+          onFocus={(e) => {
+            setErrors({
+              ...errors,
+              text: null,
+            });
+          }}
           onChange={(e) => {
             if (
               reminder.text &&
@@ -80,10 +134,18 @@ export default function AddReminderModal({
           }}
         />
         <TextField
+          error={errors.date && errors.date.length > 0}
+          helperText={errors.date && errors.date.length > 0 ? errors.date : ""}
           fullWidth
           label="Date"
           variant="outlined"
           value={reminder.date}
+          onFocus={(e) => {
+            setErrors({
+              ...errors,
+              date: null,
+            });
+          }}
           onChange={(e) => {
             setReminder((oldSt) => ({
               ...oldSt,
