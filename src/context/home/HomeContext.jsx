@@ -1,4 +1,5 @@
 import React, { useState, createContext } from "react";
+
 import { getForecastForDate } from "../../utils/visualCrossing";
 
 export const HomeContext = createContext({});

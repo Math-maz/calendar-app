@@ -1,45 +1,19 @@
 import React, { useState, useEffect, useContext } from "react";
+
 import moment from "moment";
 import { nanoid } from "nanoid";
 
-import getDaysInMonth from "../utils/getDaysInMonth";
-
 import "../sass/calendar.scss";
 
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
-
-import {
-  Button,
-  Divider,
-  IconButton,
-  TextField,
-  // Autocomplete,
-  Typography,
-} from "@mui/material";
-import { Box } from "@mui/system";
-import Autocomplete from "react-google-autocomplete";
-
-import { getForecastForDate } from "../utils/visualCrossing";
+import AddReminderModal from "../components/AddReminderModal";
+import DateCard from "../components/DateCard";
+import EditReminderModal from "../components/EditReminderModal";
+import Header from "../components/Header";
+import ReminderCard from "../components/ReminderCard";
 import { HomeContext } from "../context/home/HomeContext";
-const DAYS_OF_THE_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+import { DAYS_OF_THE_WEEK } from "../utils/constants";
+import getDaysInMonth from "../utils/getDaysInMonth";
+
 function Calendar(props) {
   // your calendar implementation Goes here!
   // Be creative
@@ -56,12 +30,10 @@ function Calendar(props) {
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
 
-  const [editReminder, setEditReminder] = useState();
-  const [reminderCity, setReminderCity] = useState("");
-  const [reminderDate, setReminderDate] = useState(
-    moment(new Date()).format("YYYY-MM-DD[T]HH:mm")
-  );
-  const [description, setDescription] = useState("");
+  const [newReminder, setNewReminder] = useState({
+    date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
+  });
+  const [editReminder, setEditReminder] = useState({});
 
   const loadMonth = (date) => {
     const currentMonth1Based = date.getMonth() + 1;
@@ -110,7 +82,7 @@ function Calendar(props) {
   };
   useEffect(() => {
     loadMonth(currentDate);
-  }, []);
+  }, [currentDate]);
   const formatRemindersHeader = (date) => {
     return moment(new Date(date)).format("MMMM Do");
   };
@@ -124,18 +96,53 @@ function Calendar(props) {
   const handleAddReminder = async (e) => {
     e.preventDefault();
 
-    const dateId = new Date(reminderDate).toDateString();
+    const dateId = new Date(newReminder.date).toDateString();
     const reminder = {
       id: nanoid(),
-      text: description,
-      city: reminderCity,
-      initialReminderDate: reminderDate,
-      date: reminderDate,
+      text: newReminder.text,
+      city: newReminder.city,
+      initialReminderDate: newReminder.date,
+      date: newReminder.date,
     };
     await actions.addReminder(dateId, reminder);
     setOpenModal(false);
   };
+  const handleCardClick = (day) => {
+    if (!day.active) {
+      return;
+    }
+    setCurrentDateId(
+      `${new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day.day
+      ).toDateString()}`
+    );
+  };
+  const handleReminderCardClick = (reminder) => {
+    setEditReminder(reminder);
+    setOpenEditModal(true);
+  };
 
+  const handleLeftClick = () => {
+    const date = new Date(currentDate);
+    date.setMonth(date.getMonth() - 1);
+    setCurrentDate(date);
+    loadMonth(date);
+  };
+  const handleRightClick = () => {
+    const date = new Date(currentDate);
+    date.setMonth(date.getMonth() + 1);
+    setCurrentDate(date);
+    loadMonth(date);
+  };
+  const handleNewReminderClick = () => {
+    setOpenModal(true);
+  };
+  const handleCloseEditModal = () => {
+    setOpenEditModal(false);
+    setEditReminder({});
+  };
   return (
     <div className="container">
       <h1>Calendar</h1>
@@ -147,54 +154,12 @@ function Calendar(props) {
       {days.length > 0 && (
         <section className="calendar-wrapper">
           <div style={{ padding: "12px" }}>
-            {/* <h2>{`${
-              MONTHS[currentDate.getMonth()]
-            } - ${currentDate.getFullYear()}`}</h2> */}
-            <header>
-              <nav>
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    const date = new Date(currentDate);
-                    date.setMonth(date.getMonth() - 1);
-                    setCurrentDate(date);
-                    loadMonth(date);
-                  }}
-                >
-                  <ChevronLeftIcon />
-                </IconButton>
-                <h2>
-                  <span>{MONTHS[currentDate.getMonth()]}</span>
-                  {"  "}
-                  <span style={{ fontWeight: "normal" }}>
-                    {currentDate.getFullYear()}
-                  </span>
-                </h2>
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    const date = new Date(currentDate);
-                    date.setMonth(date.getMonth() + 1);
-                    setCurrentDate(date);
-                    loadMonth(date);
-                  }}
-                >
-                  <ChevronRightIcon />
-                </IconButton>
-              </nav>
-              <Button
-                onClick={(e) => {
-                  setOpenModal(true);
-                }}
-              >
-                <AddIcon fontSize="small" />
-                <span>New Reminder</span>
-              </Button>
-              {/* <button>
-                <AddIcon fontSize="small" />
-                <span>New Reminder</span>
-              </button> */}
-            </header>
+            <Header
+              currentDate={currentDate}
+              handleLeftClick={handleLeftClick}
+              handleRightClick={handleRightClick}
+              handleNewReminderClick={handleNewReminderClick}
+            />
             <main className="grid-wrapper">
               {DAYS_OF_THE_WEEK.map((day) => {
                 return (
@@ -204,43 +169,16 @@ function Calendar(props) {
                 );
               })}
               {days.map((day) => (
-                <div
-                  className={day.active ? "active" : ""}
-                  style={{
-                    backgroundColor: day.active ? "white" : "#dddddd",
-                    position: "relative",
-                    color:
-                      day.id && day.id === currentDateId
-                        ? "#7C3E66"
-                        : "#243A73",
-                    fontWeight:
-                      day.id && day.id === currentDateId ? "bold" : "normal",
-                  }}
-                  onClick={(e) => {
-                    if (!day.active) {
-                      return;
-                    }
-                    setCurrentDateId(
-                      `${new Date(
-                        currentDate.getFullYear(),
-                        currentDate.getMonth(),
-                        day.day
-                      ).toDateString()}`
-                    );
-                  }}
-                  key={day.id}
-                >
-                  {day.day}
-                  {reminders[day.id] && reminders[day.id].length > 0 && (
-                    <span className="reminder-count">
-                      <span>{reminders[day.id].length}</span>
-                    </span>
-                  )}
-                </div>
+                <DateCard
+                  day={day}
+                  currentDateId={currentDateId}
+                  reminders={reminders}
+                  handleCardClick={handleCardClick}
+                />
               ))}
             </main>
           </div>
-          <div className="calendar-reminders">
+          <aside className="calendar-reminders">
             <h2>
               {currentDateId
                 ? formatRemindersHeader(currentDateId)
@@ -255,264 +193,31 @@ function Calendar(props) {
             {reminders[currentDateId] && (
               <ul>
                 {reminders[currentDateId].map((reminder) => (
-                  <li>
-                    <div>
-                      {`${reminder.city}, ${moment(
-                        new Date(reminder.date)
-                      ).format("h:mm A")}`}
-                      {reminder.forecast && (
-                        <div>{` (${reminder.forecast})`}</div>
-                      )}
-                    </div>
-                    <span>{reminder.text}</span>
-                    <IconButton
-                      onClick={(e) => {
-                        setEditReminder(reminder);
-                        setOpenEditModal(true);
-                      }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <Divider
-                      sx={{ borderColor: "#F2EBE9", marginTop: "4px" }}
-                    />
-                  </li>
+                  <ReminderCard
+                    key={reminder.key}
+                    reminder={reminder}
+                    handleReminderCardClick={handleReminderCardClick}
+                  />
                 ))}
               </ul>
             )}
-          </div>
+          </aside>
         </section>
       )}
       {openModal && (
-        <div className="modal">
-          <Box
-            component="form"
-            onSubmit={handleAddReminder}
-            sx={{
-              "& > :not(style)": { m: 1, width: "100%" },
-              display: "flex",
-              width: 400,
-              flexDirection: "column",
-              backgroundColor: "white",
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              alignItems: "center",
-              padding: "24px",
-              borderRadius: 2,
-              "& div": {
-                marginTop: 0,
-              },
-            }}
-            noValidate
-            autoComplete="off"
-          >
-            <Typography variant="h4">Add Reminder</Typography>
-            <Autocomplete
-              label="City"
-              apiKey="AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g"
-              disablePortal
-              placeholder="City"
-              fullWidth
-              // options={[{ label: "Teste" }]}
-              onPlaceSelected={async (place) => {
-                const cityName = place.address_components[0].long_name;
-                setReminderCity(cityName);
-              }}
-              // renderInput={(params) => <TextField {...params} label="City" />}
-              style={{
-                padding: "16.5px 14px",
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Reminder"
-              id="title"
-              variant="outlined"
-              name="title"
-              type="text"
-              value={description}
-              onChange={(e) => {
-                if (description.length === 30 && e.target.value.length > 30) {
-                  return;
-                }
-                setDescription(e.target.value);
-              }}
-              placeholder="Title of reminder"
-              sx={{
-                marginTop: "12px !important",
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Date"
-              variant="outlined"
-              value={reminderDate}
-              onChange={(e) => setReminderDate(e.target.value)}
-              name="date"
-              type="datetime-local"
-              sx={{
-                marginTop: "12px !important",
-              }}
-            />
-            <Button
-              // onClick={(e) => {
-              //   const reminder = {
-              //     title,
-              //     reminderDate,
-              //     description,
-              //   };
-              //   addReminder(currentDateId, reminder);
-              //   setTitle("");
-              //   setReminderDate("");
-              //   setDescription("");
-              //   setOpenModal(false);
-              // }}
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: "#4D4C7D",
-                "&:hover": {
-                  backgroundColor: "#A5BECC",
-                },
-              }}
-            >
-              Create
-            </Button>
-            <IconButton
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 8,
-                width: "32px !important",
-                height: 32,
-              }}
-              onClick={() => {
-                setOpenModal(false);
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </div>
+        <AddReminderModal
+          handleAddReminder={handleAddReminder}
+          reminder={newReminder}
+          setReminder={setNewReminder}
+        />
       )}
       {openEditModal && editReminder && (
-        <div className="modal">
-          <Box
-            component="form"
-            onSubmit={handleEditReminder}
-            sx={{
-              "& > :not(style)": { m: 1, width: "100%" },
-              display: "flex",
-              width: 400,
-              flexDirection: "column",
-              backgroundColor: "white",
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              alignItems: "center",
-              padding: "24px",
-              borderRadius: 2,
-              "& div": {
-                marginTop: 0,
-              },
-            }}
-            noValidate
-            autoComplete="off"
-          >
-            <Typography variant="h4">Edit Reminder</Typography>
-            <Autocomplete
-              label="City"
-              apiKey="AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g"
-              disablePortal
-              placeholder="City"
-              fullWidth
-              defaultValue={editReminder.city}
-              // options={[{ label: "Teste" }]}
-              onPlaceSelected={async (place) => {
-                const cityName = place.address_components[0].long_name;
-                setEditReminder((oldState) => ({
-                  ...oldState,
-                  city: cityName,
-                }));
-              }}
-              // renderInput={(params) => <TextField {...params} label="City" />}
-              style={{
-                padding: "16.5px 14px",
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Reminder"
-              id="title"
-              variant="outlined"
-              name="title"
-              type="text"
-              value={editReminder.text}
-              onChange={(e) => {
-                if (description.length === 30 && e.target.value.length > 30) {
-                  return;
-                }
-                setEditReminder((oldState) => ({
-                  ...oldState,
-                  text: e.target.value,
-                }));
-              }}
-              placeholder="Title of reminder"
-              sx={{
-                marginTop: "12px !important",
-              }}
-            />
-            <TextField
-              fullWidth
-              label="Date"
-              variant="outlined"
-              value={editReminder.date}
-              onChange={(e) => {
-                setEditReminder((oldState) => ({
-                  ...oldState,
-                  date: e.target.value,
-                }));
-              }}
-              name="date"
-              type="datetime-local"
-              sx={{
-                marginTop: "12px !important",
-              }}
-            />
-            <Button
-              onClick={handleEditReminder}
-              variant="contained"
-              sx={{
-                backgroundColor: "#4D4C7D",
-                "&:hover": {
-                  backgroundColor: "#A5BECC",
-                },
-              }}
-            >
-              Edit
-            </Button>
-            <IconButton
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 8,
-                width: "32px !important",
-                height: 32,
-              }}
-              onClick={() => {
-                setOpenEditModal(false);
-                setReminderCity("");
-                setReminderDate("");
-                setDescription("");
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </div>
+        <EditReminderModal
+          editReminder={editReminder}
+          setEditReminder={setEditReminder}
+          handleCloseEditModal={handleCloseEditModal}
+          handleEditReminder={handleEditReminder}
+        />
       )}
     </div>
   );
