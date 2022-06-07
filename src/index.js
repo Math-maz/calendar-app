@@ -9,12 +9,13 @@ import getStore from "./store/getStore";
 
 // import main sass file
 import "./sass/app.scss";
+import { HomeProvider } from "./context/home/HomeContext";
 
 ReactDOM.render(
   <React.StrictMode>
-    <ReduxProvider store={getStore(reducers)}>
+    <HomeProvider>
       <Main />
-    </ReduxProvider>
+    </HomeProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

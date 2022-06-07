@@ -1,55 +1,144 @@
+.calendar-wrapper {
+  display:flex;
+  border: 1px solid #dddddd;
+  background-color: #F2EBE9;
+  border-radius: 12px;
+  height: 600px;
+  & header {
+    display: flex;
+    justify-content: space-between;
+    & nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    & h2 {
+      margin: 0 .5rem;
+    }
+    & > button {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background-color: #4D4C7D;
+      color: #ffffff;
+      outline: none;
+      border: .5px solid #4D4C7D;
+      transition: all .1s linear;
+      &:hover {
+        cursor: pointer;
+        border-color: #4D4C7D;
+        color: #4D4C7D;
+        & svg {
+          border-color: #4D4C7D;
+        }
+      }
+      & svg {
+        border-right: 1px solid white;
+        width: 32px;
+        height: 32px;
+      }
+      & span {
+        margin-top: 0;
+        padding: 0 12px;
+      }
+    }
+  }
+  & h2 {
+    font-size: 2rem;
+  }
+  .calendar-reminders {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+    width: 300px;
+    background-color: #7C3E66;
+    margin: 0;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    & h2 {
+      color: #F2EBE9; 
+    }
+    & h4 {
+      color: #A5BECC;
+    }
+    & ul {
+      padding: 0;
+      margin-top: 2rem;
+      color: #F2EBE9;
+      overflow-y: auto;
+      width: 100%;
+    }
+    & li {
+      list-style-type:none;
+      font-size: 1.2rem;
+      position: relative;
+      & button {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        color: #F2EBE9;
+        & span {
+          margin-top: 0;
+        }
+      }
+      & div {
+        font-weight: bold;
+      }
+    }
+  }
+}
+
 .grid-wrapper {
   // background-color: red;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);;
+  grid-template-columns: repeat(7, 1fr);
   grid-template-rows: repeat(5, 1fr);
+  height: 450px;
+  font-size: 1.4rem;
+  margin-top: 2rem;
   /* added */
-  grid-auto-rows: 0px;
-  gap: 4px;
   // overflow: hidden;
   & div {
     position: relative;
     margin: 0;
-    width: 120px;
-    height: 100px;
+    width: 100px;
+    height: 80px;
     background-color: #cccccc;
-    border: 1px solid black;
+    border: .5px solid #4D4C7D;
     transition: all .1s linear;
-    padding: 4px;
-    & i {
-      display: none;
-    }
+    padding: 8px;
   }
-  & div.active {
-    & i {
-      display: block;
-      position: absolute;
-      right: 6px;
-      top: -2px;
-      transition: all .1s linear;
-      font-size: 1.4rem;
-      &:hover {
-        transform: scale(1.5);
-        z-index: 11;
-        color: green;
-      }
-    }
-    &:hover {
-      cursor: pointer;
-      transform: scale(1.2);
-      z-index: 10;
-    }
+  & div.active:hover {
+    cursor: pointer;
+    transform: scale(1.1);
+    z-index: 20;
   }
   & span {
+    align-self: flex-end;
     margin: 0;
-    width: 120px;
-    height: 40px;
-    background: rgb(66, 114, 176);
-    color: white;
-    font-weight: bold;
+    width: 100px;
+    height: 20px;
+    color: #4D4C7D;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
+    padding-right: 4px;
+  }
+  & span.reminder-count {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 6px;
+    // padding-left: 12px;
+    & span {
+      width: auto;
+      padding: 2px 12px;
+      background-color: #eeeeee;
+      // border: 1px solid red;
+      border-radius: 6px;
+    }
   }
 }
 
@@ -78,6 +167,9 @@
   flex-direction: column;
   justify-content: space-between;
   z-index: 25;
+  & div {
+    margin-top: 0;
+  }
   & label {
     width: 80%;
   }
@@ -90,7 +182,7 @@
     border-radius: 8px;
     margin: 0;
   }
-  & button {
+  & > button {
     width: 80%;
     padding: 8px;
     color: white;
@@ -117,6 +209,13 @@
       cursor: pointer;
       background-color: black;
       color: white;
+    }
+  }
+  & > div {
+    padding-left: 10%;
+    padding-right: 10%;
+    & input {
+      width: 100%;
     }
   }
 }
@@ -165,4 +264,8 @@
       color: white;
     }
   }
+}
+.header {
+  color: #A5BECC;
+  font-weight: bold;
 }
