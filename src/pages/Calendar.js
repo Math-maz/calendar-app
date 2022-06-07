@@ -91,6 +91,7 @@ function Calendar(props) {
     const dateId = new Date(editReminder.initialReminderDate).toDateString();
     await actions.editReminder(dateId, editReminder.id, editReminder);
     setOpenEditModal(false);
+    setEditReminder({});
   };
 
   const handleAddReminder = async (e) => {
@@ -106,6 +107,9 @@ function Calendar(props) {
     };
     await actions.addReminder(dateId, reminder);
     setOpenModal(false);
+    setNewReminder({
+      date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
+    });
   };
   const handleCardClick = (day) => {
     if (!day.active) {
@@ -142,6 +146,12 @@ function Calendar(props) {
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setEditReminder({});
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setNewReminder({
+      date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
+    });
   };
   return (
     <div className="container">
@@ -209,6 +219,7 @@ function Calendar(props) {
           handleAddReminder={handleAddReminder}
           reminder={newReminder}
           setReminder={setNewReminder}
+          handleCloseModal={handleCloseModal}
         />
       )}
       {openEditModal && editReminder && (
