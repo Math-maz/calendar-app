@@ -35,6 +35,7 @@ function Calendar(props) {
   const [editReminder, setEditReminder] = useState({});
 
   const loadMonth = (date) => {
+    console.log(process.env);
     const currentMonth1Based = date.getMonth() + 1;
 
     const daysOfCurrentMonth = getDaysInMonth(

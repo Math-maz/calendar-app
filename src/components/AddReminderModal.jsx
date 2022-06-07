@@ -10,7 +10,7 @@ export default function AddReminderModal({
   handleCloseModal,
 }) {
   const { ref } = usePlacesWidget({
-    apiKey: "AIzaSyDzehZryzqHYGsAnvRq3sVB7MCxNsoig5g",
+    apiKey: process.env.REACT_APP_GOOGLE_APIKEY,
     onPlaceSelected: async (place) => {
       const cityName = place.address_components[0].long_name;
       setReminder((oldSt) => ({

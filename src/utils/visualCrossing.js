@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 
 const BASE_URL = "https://weather.visualcrossing.com/";
-const apiKey = "G7NLAZAG8EAM28XJ4YTJ64TLM";
+
 export const getForecastForDate = async (city, date) => {
   if (+new Date(date) > +new Date()) {
     return;
@@ -15,7 +15,7 @@ export const getForecastForDate = async (city, date) => {
       unitGroup: "uk",
       contentType: "json",
       location: city,
-      key: apiKey,
+      key: process.env.REACT_APP_VISUAL_CROSSING_APIKEY,
     });
     const res = await axios.get(
       `${BASE_URL}/VisualCrossingWebServices/rest/services/weatherdata/history?${params.toString()}`
