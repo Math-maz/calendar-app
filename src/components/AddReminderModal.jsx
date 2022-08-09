@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Autocomplete, { usePlacesWidget } from "react-google-autocomplete";
+import { usePlacesWidget } from "react-google-autocomplete";
 
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
@@ -8,6 +8,7 @@ export default function AddReminderModal({
   reminder,
   setReminder,
   handleCloseModal,
+  reminderDate,
 }) {
   const { ref } = usePlacesWidget({
     apiKey: process.env.REACT_APP_GOOGLE_APIKEY,
@@ -21,7 +22,6 @@ export default function AddReminderModal({
   });
 
   const [errors, setErrors] = useState({});
-
   const validateFields = () => {
     const errors = {};
     let hasError = false;

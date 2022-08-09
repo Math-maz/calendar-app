@@ -4,9 +4,7 @@ import moment from "moment";
 const BASE_URL = "https://weather.visualcrossing.com/";
 
 export const getForecastForDate = async (city, date) => {
-  // if (+new Date(date) > +new Date()) {
-  //   return;
-  // }
+  console.log({ date });
   try {
     const params = new URLSearchParams({
       aggregateHours: 24,
@@ -20,23 +18,12 @@ export const getForecastForDate = async (city, date) => {
     const res = await axios.get(
       `${BASE_URL}/VisualCrossingWebServices/rest/services/weatherdata/forecast?${params.toString()}`
     );
-    if (!Object.keys(res.data.locations).length > 0) {
-      return;
-    }
-    const dateForecast = res.data.locations[
-      Object.keys(res.data.locations)[0]
-    ].values.find((forecast) => {
-      return (
-        moment(new Date(forecast.datetimeStr)).format(
-          "YYYY-MM-DD[T][00:00:00]"
-        ) === moment(date).format("YYYY-MM-DD[T][00:00:00]")
-      );
-    });
-    if (!dateForecast) {
-      return;
-    }
-    return dateForecast.conditions;
+    console.log({ res });
+    // if (Object.keys(res.data.locations).length > 0) {
+    //   return res.data.locations[Object.keys(res.data.locations)[0]].values[0]
+    //     .conditions;
+    // }
   } catch (error) {
-    throw new Error("No Weather data available");
+    return "No Weather data available";
   }
 };

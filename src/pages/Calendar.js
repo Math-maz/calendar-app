@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 
+import { Snackbar } from "@mui/material";
+
 import moment from "moment";
 import { nanoid } from "nanoid";
 
@@ -12,7 +14,7 @@ import Header from "../components/Header";
 import ReminderCard from "../components/ReminderCard";
 import { HomeContext } from "../context/home/HomeContext";
 import { DAYS_OF_THE_WEEK } from "../utils/constants";
-import getDaysInMonth from "../utils/getDaysInMonth";
+import getMonthDays from "../utils/loadMonth";
 
 function Calendar(props) {
   // your calendar implementation Goes here!
@@ -35,49 +37,8 @@ function Calendar(props) {
   const [editReminder, setEditReminder] = useState({});
 
   const loadMonth = (date) => {
-    console.log(process.env);
-    const currentMonth1Based = date.getMonth() + 1;
-
-    const daysOfCurrentMonth = getDaysInMonth(
-      currentMonth1Based,
-      date.getFullYear()
-    );
-    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-
-    const placeholderDays = [];
-
-    if (new Date(date.getFullYear(), date.getMonth(), 1)) {
-      const lastMonthDays = getDaysInMonth(
-        currentMonth1Based - 1,
-        date.getFullYear()
-      );
-      const lastMonthDaysRequired = [];
-      for (
-        let i = lastMonthDays;
-        i > lastMonthDays - firstDayOfMonth.getDay();
-        i--
-      ) {
-        lastMonthDaysRequired.push({ day: i, active: false });
-      }
-      placeholderDays.push(...lastMonthDaysRequired.reverse());
-    }
-
-    for (let i = 0; i < daysOfCurrentMonth; i++) {
-      placeholderDays.push({
-        id: `${new Date(
-          date.getFullYear(),
-          date.getMonth(),
-          i + 1
-        ).toDateString()}`,
-        day: i + 1,
-        active: true,
-      });
-    }
-    const DAYS_IN_A_WEEK = 7;
-    for (let i = 1; i < DAYS_IN_A_WEEK - firstDayOfMonth.getDay() - 1; i++) {
-      placeholderDays.push({ day: i, active: false });
-    }
-    setDays(placeholderDays);
+    const days = getMonthDays(date);
+    setDays(days);
   };
   useEffect(() => {
     loadMonth(currentDate);
@@ -94,19 +55,30 @@ function Calendar(props) {
   };
 
   const handleAddReminder = async () => {
-    const dateId = new Date(newReminder.date).toDateString();
-    const reminder = {
-      id: nanoid(),
-      text: newReminder.text,
-      city: newReminder.city,
-      initialReminderDate: newReminder.date,
-      date: newReminder.date,
-    };
-    await actions.addReminder(dateId, reminder);
-    setOpenModal(false);
-    setNewReminder({
-      date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
-    });
+    try {
+      const dateId = new Date(newReminder.date).toDateString();
+      const reminder = {
+        id: nanoid(),
+        text: newReminder.text,
+        city: newReminder.city,
+        initialReminderDate: newReminder.date,
+        date: newReminder.date,
+      };
+      await actions.addReminder(dateId, reminder);
+      setOpenModal(false);
+      setNewReminder({
+        date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
+      });
+    } catch (error) {
+      actions.openSnackbar({
+        severity: "error",
+        message: error.message,
+      });
+      setOpenModal(false);
+      setNewReminder({
+        date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
+      });
+    }
   };
   const handleCardClick = (day) => {
     if (!day.active) {
@@ -119,6 +91,12 @@ function Calendar(props) {
         day.day
       ).toDateString()}`
     );
+    setNewReminder((oldSt) => ({
+      ...oldSt,
+      date: moment(
+        new Date(currentDate.getFullYear(), currentDate.getMonth(), day.day)
+      ).format("YYYY-MM-DD[T]HH:mm"),
+    }));
   };
   const handleReminderCardClick = (reminder) => {
     setEditReminder(reminder);
@@ -146,9 +124,11 @@ function Calendar(props) {
   };
   const handleCloseModal = () => {
     setOpenModal(false);
-    setNewReminder({
-      date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
-    });
+    setNewReminder((oldSt) => ({
+      date: newReminder.date
+        ? newReminder.date
+        : moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
+    }));
   };
   return (
     <div className="container">
@@ -210,6 +190,11 @@ function Calendar(props) {
       )}
       {openModal && (
         <AddReminderModal
+          reminderDate={
+            currentDateId
+              ? moment(new Date(currentDateId)).format("YYYY-MM-DD[T]HH:mm")
+              : moment(new Date()).format("YYYY-MM-DD[T]HH:mm")
+          }
           handleAddReminder={handleAddReminder}
           reminder={newReminder}
           setReminder={setNewReminder}
