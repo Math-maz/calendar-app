@@ -3,12 +3,12 @@ import { usePlacesWidget } from "react-google-autocomplete";
 
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Button, IconButton, TextField, Typography } from "@mui/material";
-export default function AddReminderModal({
-  handleAddReminder,
+export default function ReminderModal({
+  handleSubmit,
   reminder,
   setReminder,
   handleCloseModal,
-  reminderDate,
+  editing = false,
 }) {
   const { ref } = usePlacesWidget({
     apiKey: process.env.REACT_APP_GOOGLE_APIKEY,
@@ -50,7 +50,7 @@ export default function AddReminderModal({
           if (hasError) {
             return;
           }
-          handleAddReminder();
+          handleSubmit();
         }}
         sx={{
           "& > :not(style)": { m: 1, width: "100%" },
@@ -72,7 +72,9 @@ export default function AddReminderModal({
         noValidate
         autoComplete="off"
       >
-        <Typography variant="h4">Add Reminder</Typography>
+        <Typography variant="h4">
+          {editing ? "Edit" : "Add"} Reminder
+        </Typography>
         <TextField
           inputRef={ref}
           error={errors.city && errors.city.length > 0}
@@ -83,7 +85,7 @@ export default function AddReminderModal({
           variant="outlined"
           name="title"
           type="text"
-          value={reminder.city}
+          value={reminder.city || ""}
           onFocus={(e) => {
             setErrors({
               ...errors,
@@ -109,7 +111,7 @@ export default function AddReminderModal({
           variant="outlined"
           name="title"
           type="text"
-          value={reminder.text}
+          value={reminder.text || ""}
           onFocus={(e) => {
             setErrors({
               ...errors,
@@ -139,7 +141,7 @@ export default function AddReminderModal({
           fullWidth
           label="Date"
           variant="outlined"
-          value={reminder.date}
+          value={reminder.date || ""}
           onFocus={(e) => {
             setErrors({
               ...errors,
@@ -168,7 +170,7 @@ export default function AddReminderModal({
             },
           }}
         >
-          Create
+          {editing ? "Edit" : "Create"}
         </Button>
         <IconButton
           sx={{
