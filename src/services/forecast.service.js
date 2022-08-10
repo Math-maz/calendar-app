@@ -4,7 +4,7 @@ import moment from "moment";
 const BASE_URL = "https://weather.visualcrossing.com/";
 
 export const getForecastForDate = async (city, date) => {
-  console.log({ date });
+  const isDateInTheFuture = +new Date(date) > +new Date();
   try {
     const params = new URLSearchParams({
       aggregateHours: 24,
@@ -15,15 +15,29 @@ export const getForecastForDate = async (city, date) => {
       location: city,
       key: process.env.REACT_APP_VISUAL_CROSSING_APIKEY,
     });
+
     const res = await axios.get(
-      `${BASE_URL}/VisualCrossingWebServices/rest/services/weatherdata/forecast?${params.toString()}`
+      `${BASE_URL}/VisualCrossingWebServices/rest/services/weatherdata/${
+        isDateInTheFuture ? "forecast" : "history"
+      }?${params.toString()}`
     );
-    console.log({ res });
-    // if (Object.keys(res.data.locations).length > 0) {
-    //   return res.data.locations[Object.keys(res.data.locations)[0]].values[0]
-    //     .conditions;
-    // }
+    if (!Object.keys(res.data.locations).length > 0) {
+      return;
+    }
+    const dateForecast = res.data.locations[
+      Object.keys(res.data.locations)[0]
+    ].values.find((forecast) => {
+      return (
+        moment(new Date(forecast.datetimeStr)).format(
+          "YYYY-MM-DD[T][00:00:00]"
+        ) === moment(date).format("YYYY-MM-DD[T][00:00:00]")
+      );
+    });
+    if (!dateForecast) {
+      return;
+    }
+    return dateForecast.conditions;
   } catch (error) {
-    return "No Weather data available";
+    throw new Error("No Weather data available");
   }
 };
