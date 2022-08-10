@@ -1,24 +1,19 @@
 import React, { useState, useEffect, useContext } from "react";
 
-import { Snackbar } from "@mui/material";
-
 import moment from "moment";
 import { nanoid } from "nanoid";
 
 import "../sass/calendar.scss";
 
-import AddReminderModal from "../components/AddReminderModal";
 import DateCard from "../components/DateCard";
-import EditReminderModal from "../components/EditReminderModal";
 import Header from "../components/Header";
 import ReminderCard from "../components/ReminderCard";
+import ReminderModal from "../components/ReminderModal";
 import { HomeContext } from "../context/home/HomeContext";
 import { DAYS_OF_THE_WEEK } from "../utils/constants";
 import getMonthDays from "../utils/loadMonth";
 
 function Calendar(props) {
-  // your calendar implementation Goes here!
-  // Be creative
   const {
     state: { reminders },
     actions,
@@ -29,12 +24,11 @@ function Calendar(props) {
   const [currentDateId, setCurrentDateId] = useState();
 
   const [openModal, setOpenModal] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false);
 
   const [newReminder, setNewReminder] = useState({
     date: moment(new Date()).format("YYYY-MM-DD[T]HH:mm"),
   });
-  const [editReminder, setEditReminder] = useState({});
+  const [editReminder, setEditReminder] = useState();
 
   const loadMonth = (date) => {
     const days = getMonthDays(date);
@@ -50,8 +44,8 @@ function Calendar(props) {
   const handleEditReminder = async () => {
     const dateId = new Date(editReminder.initialReminderDate).toDateString();
     await actions.editReminder(dateId, editReminder.id, editReminder);
-    setOpenEditModal(false);
-    setEditReminder({});
+    setOpenModal(false);
+    setEditReminder();
   };
 
   const handleAddReminder = async () => {
@@ -100,7 +94,7 @@ function Calendar(props) {
   };
   const handleReminderCardClick = (reminder) => {
     setEditReminder(reminder);
-    setOpenEditModal(true);
+    setOpenModal(true);
   };
 
   const handleLeftClick = () => {
@@ -117,10 +111,6 @@ function Calendar(props) {
   };
   const handleNewReminderClick = () => {
     setOpenModal(true);
-  };
-  const handleCloseEditModal = () => {
-    setOpenEditModal(false);
-    setEditReminder({});
   };
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -189,24 +179,17 @@ function Calendar(props) {
         </section>
       )}
       {openModal && (
-        <AddReminderModal
+        <ReminderModal
           reminderDate={
             currentDateId
               ? moment(new Date(currentDateId)).format("YYYY-MM-DD[T]HH:mm")
               : moment(new Date()).format("YYYY-MM-DD[T]HH:mm")
           }
-          handleAddReminder={handleAddReminder}
-          reminder={newReminder}
-          setReminder={setNewReminder}
+          handleSubmit={!!editReminder ? handleEditReminder : handleAddReminder}
+          reminder={!!editReminder ? editReminder : newReminder}
+          setReminder={!!editReminder ? setEditReminder : setNewReminder}
           handleCloseModal={handleCloseModal}
-        />
-      )}
-      {openEditModal && editReminder && (
-        <EditReminderModal
-          editReminder={editReminder}
-          setEditReminder={setEditReminder}
-          handleCloseEditModal={handleCloseEditModal}
-          handleEditReminder={handleEditReminder}
+          editing={!!editReminder}
         />
       )}
     </div>

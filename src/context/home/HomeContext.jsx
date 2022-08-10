@@ -1,6 +1,6 @@
 import React, { useState, createContext } from "react";
 
-import { getForecastForDate } from "../../utils/visualCrossing";
+import { getForecastForDate } from "../../services/forecast.service";
 
 export const HomeContext = createContext({});
 
@@ -45,6 +45,7 @@ export const HomeProvider = ({ children }) => {
   };
 
   const editReminder = async (dateId, reminderId, reminderData) => {
+    const editingReminder = true;
     const newDateId = new Date(reminderData.date).toDateString();
     let remindersCp = { ...reminders };
     let targetReminder = remindersCp[dateId].find(
@@ -55,14 +56,17 @@ export const HomeProvider = ({ children }) => {
     }
     deleteReminder(dateId, reminderId);
     reminderData.initialReminderDate = reminderData.date;
-    await addReminder(newDateId, reminderData);
+    await addReminder(newDateId, reminderData, editingReminder);
   };
+
   const openSnackbar = (data) => {
     setSnackbar(data);
   };
+
   const closeSnackbar = () => {
     setSnackbar();
   };
+
   return (
     <HomeContext.Provider
       value={{
