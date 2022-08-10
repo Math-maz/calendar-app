@@ -92,15 +92,12 @@
 }
 
 .grid-wrapper {
-  // background-color: red;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-template-rows: repeat(5, 1fr);
   height: 450px;
   font-size: 1.4rem;
   margin-top: 2rem;
-  /* added */
-  // overflow: hidden;
   & div {
     position: relative;
     margin: 0;
@@ -131,12 +128,10 @@
     display: flex;
     justify-content: flex-start;
     margin-top: 6px;
-    // padding-left: 12px;
     & span {
       width: auto;
       padding: 2px 12px;
       background-color: #eeeeee;
-      // border: 1px solid red;
       border-radius: 6px;
     }
   }
